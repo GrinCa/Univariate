@@ -4,24 +4,27 @@ ndof = size(FEmatrices.Nodes,1);
 
 Hr = listLHS{1};
 Hi = listLHS{2};
-Q  = listLHS{3};
+Qr  = listLHS{3};
+Qi  = listLHS{4};
 
 %definition of the regions
 acoustic_region = 1;
 PML_region = 2;
 
 %definition of the labels
-surf_label = 3;
+surface_label = 3;
 
 tab_region = get_regions([acoustic_region,PML_region],ndof,FILENAME);
-FEmatrices.acoustic_nodes = tab_region(:,1);
-FEmatrices.PML_nodes = tab_region(:,2);
+FEmatrices.acoustic_nodes = find(tab_region(:,1));
+FEmatrices.PML_nodes = find(tab_region(:,2));
 
-tab_labels = get_labels([surf_label],FILENAME);
-FEmatrices.surf_nodes = tab_labels(:,1);
+tab_labels = get_labels([surface_label],FILENAME);
+FEmatrices.surf_nodes = find(tab_labels(:,1));
 
 H = Hr+1i*Hi;
+Q = Qr+1i*Qi;
 FEmatrices.LHS = {H,Q};
+FEmatrices.size_system = size(H,1);
 
 end
 

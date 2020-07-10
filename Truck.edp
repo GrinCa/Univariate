@@ -45,7 +45,7 @@ VhF p,v;
 // PML functions
 //--------------------------------------------------------------------------
 
-real lpml = 1.6;
+real lpml = 1.51;
 
 real L1x = 1;
 real L2x = L1x+lpml;
@@ -54,15 +54,18 @@ real L2y = L1y+lpml;
 real L1z = 4.8;
 real L2z = L1z+lpml;
 
-real km=2.2;
-real sigma = 3.45;
+real km=3.4;
+real sigmax = 7;
+real sigmay = 7;
+real sigmaz = 1;
+
 
 func PML3x=1/(L2x-abs(x)) ;
-func decay3x=(region==PML) ? 1+1i*sigma*PML3x/km : 1 ;
+func decay3x=(x<=-L1x) ? 1+1i*sigmax*PML3x/km : 1 ;
 func PML3y=1/(L2y-abs(y)) ;
-func decay3y=(region==PML) ? 1+1i*sigma*PML3y/km : 1 ;
+func decay3y=(y<=-L1y) ? 1+1i*sigmay*PML3y/km : 1 ;
 func PML3z=1/(L2z-abs(z)) ;
-func decay3z=(region==PML) ? 1+1i*sigma*PML3z/km : 1 ;
+func decay3z=(z>=L1z) ? 1+1i*sigmaz*PML3z/km : 1 ;
 
 
 //--------------------------------------------------------------------------
@@ -77,7 +80,8 @@ varf hi(p, v) = int3d(Th)( dx(p)*dx(v)*imag( decay3y*decay3z/decay3x ) +
        		   			   dy(p)*dy(v)*imag( decay3x*decay3z/decay3y ) +
    	   		   			   dz(p)*dz(v)*imag( decay3x*decay3y/decay3z ) );
 
-varf q(p, v)  = int3d(Th)( p*v );
+varf qr(p, v) = int3d(Th)( p*v*real( decay3x*decay3y*decay3z ) );
+varf qi(p, v) = int3d(Th)( p*v*imag( decay3x*decay3y*decay3z ) );
 
 
 //--------------------------------------------------------------------------
@@ -87,7 +91,9 @@ varf q(p, v)  = int3d(Th)( p*v );
 //Fluid
 matrix Hr = hr(VhF, VhF);
 matrix Hi = hi(VhF, VhF);
-matrix Q  = q(VhF, VhF);
+matrix Qr = qr(VhF, VhF);
+matrix Qi = qi(VhF, VhF);
+
 
 {
 ofstream fout(root+"Hr.txt");
@@ -98,8 +104,12 @@ ofstream fout(root+"Hi.txt");
 fout<< Hi <<endl;
 }
 {
-ofstream fout(root+"Q.txt");
-fout<< Q <<endl;
+ofstream fout(root+"Qr.txt");
+fout<< Qr <<endl;
+}
+{
+ofstream fout(root+"Qi.txt");
+fout<< Qi <<endl;
 }
 
 saveBoundariesLabels(VhF, boundaryLabel, root+"labels.txt")

@@ -1,4 +1,4 @@
-function genfolders(mesh,folder)
+function genfolders(mesh,param)
 
 Filename = mesh.file;
 
@@ -6,21 +6,25 @@ Filename = mesh.file;
 % Matrices
 %--------------------------------------------------------------------------
 
+path1 = ['[' num2str(param.f_range(1)) '_' num2str(param.f_range(2)) ']'];
 
 if exist(['Matrices/',Filename]) == 0
     command = ['Matrices/',Filename];
     system(['mkdir ' command]);
 end
 
-if exist(['Matrices/',Filename,'/',folder.path1]) == 0
-    command = ['Matrices/',Filename,'/',folder.path1];
+if exist(['Matrices/',Filename,'/',path1]) == 0
+    command = ['Matrices/',Filename,'/',['[' num2str(param.f_range(1)) '_' num2str(param.f_range(2)) ']'];];
     system(['mkdir ' command]);
 end
 
-if exist(['Matrices/',Filename,'/',folder.path2]) == 0
-    command = ['Matrices/',Filename,'/',folder.path2];
-    system(['mkdir ' command]);
+for ii=1:length(param.vecfreqrange)
+    if exist(['Matrices/',Filename,'/',path1,'/[' num2str(param.vecfreqrange(ii)) '][',replace(num2str(param.freqref),' ','_') ']']) == 0
+    command = ['mkdir Matrices/',Filename,'/',path1,'/[' num2str(param.vecfreqrange(ii)) '][',replace(num2str(param.freqref),' ','_') ']'];
+    system(command);
+    end
 end
+
 
 %--------------------------------------------------------------------------
 % Geometry : copy .msh from Geometry/filename into the main folder
