@@ -54,10 +54,10 @@ real L2y = L1y+lpml;
 real L1z = 4.8;
 real L2z = L1z+lpml;
 
-real km=3.4;
+real km=6.5;
 real sigmax = 7;
 real sigmay = 7;
-real sigmaz = 1;
+real sigmaz = 5;
 
 
 func PML3x=1/(L2x-abs(x)) ;

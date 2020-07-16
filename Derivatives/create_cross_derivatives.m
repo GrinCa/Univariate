@@ -7,7 +7,7 @@ function create_cross_derivatives(FEmatrices,coeff_LHS,coeff_RHS,derivative_orde
 save('Derivatives/derivative_orders.mat','derivative_orders');
 
 % number of matrices
-nmat = length(FEmatrices.listLHS);
+nmat = length(FEmatrices.LHS);
 
 %number of variables of the given problem
 nvariables = length(variables);% example : variable = ['f';'theta'] /do not replace ; by ,

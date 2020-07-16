@@ -1,14 +1,9 @@
-function [Wtrans,Ucoeff,timing] = WCAWE_basis(listLHS,coeff_deriv,RHSderiv,nvecfreq,timing)
+function Wtrans = WCAWE_basis(listLHS,coeff_deriv,RHSderiv,nvecfreq)
 
-disp('#######################');
+disp('************************');
 disp('Calculating WCAWE basis');
-disp('#######################');
+disp('************************');
 
-
-
-
-
-tic;
 
 ndof = size(listLHS{1},1);
 nmatglob = length(listLHS);
@@ -98,15 +93,12 @@ for nn=2:nvecfreq
     V(:,nn) = Vtilde(:,nn)/U(nn,nn);
 end %nn
 
+% delete Mumps instance
+id.JOB = -2;
+id = zmumps(id);
 
 Wtrans = V;
 Ucoeff = U;
-
-
-timing.WCAWE = toc;
-outputdisplay = sprintf('[WCAWE] CPUtime for building of WCAWE basis (%d vectors): %.4f s',size(Wtrans,2),timing.WCAWE);
-disp(outputdisplay);
-
 
 
 function Pu = Pu1(nn,mm,U)

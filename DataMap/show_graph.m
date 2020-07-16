@@ -1,15 +1,14 @@
-function show_graph(arg,VALUES,title_VALUES,mesh,param)
+function show_graph(arg,VALUES,title_VALUES,param)
 
 
 if strcat(arg.config,'comparison')
-    show2d(VALUES,title_VALUES,param,mesh,arg)
+    show2d(VALUES,title_VALUES,param,arg)
 end
     
 end
 
 
-function show2d(VALUES,title_VALUES,param,mesh,arg)
-    %pathPlot = ['Matrices/' mesh.file '/' folder.path2];
+function show2d(VALUES,title_VALUES,param,arg)
     figure
     for ii=1:length(VALUES)
         plot(param.freq,VALUES{ii},'DisplayName',title_VALUES{ii});
@@ -19,5 +18,5 @@ function show2d(VALUES,title_VALUES,param,mesh,arg)
     ylabel(arg.ylabel);
     title(arg.title);
     legend;
-    %saveas(gcf,strcat(pathPlot,'/',arg.save_name,'.png'));
+    %saveas(gcf,[arg.save_path,'/',arg.save_name,'.png']);
 end

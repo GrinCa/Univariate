@@ -21,11 +21,11 @@ Geofile = 'Truck';
 % NOTE : If the size of elastic and acoustic is different, the mesh
 % elements won't be regular, which implies that the mean quadratic pressure
 % is no longer a good indicator.
-sizemesh_list = [1 1.2 1.5];
+sizemesh_list = [1.5];
 n_mesh = length(sizemesh_list);
 % creation of the file containing the size(s) of the mesh 
-system("touch sizemesh.txt");
-
+create_file = fopen('sizemesh.txt','wt');
+fclose(create_file);
 % data to change values in the .geo file before the compilation into .msh
 keyword = 'sizemesh = ';
 n_key = length(keyword);
