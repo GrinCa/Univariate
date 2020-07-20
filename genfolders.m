@@ -1,4 +1,4 @@
-function genfolders(mesh,param)
+function param = genfolders(mesh,param)
 
 Filename = mesh.file;
 
@@ -46,4 +46,28 @@ if exist(['DataMap/',Filename]) == 0
     system(['mkdir ' command]);
 end
 
+param.interval_detail_str = '';
+for ii=1:length(param.interval_construct)
+    if length(param.interval_construct{ii}) == 1
+        param.interval_detail_str = strcat(param.interval_detail_str,['[' num2str(param.interval_construct{ii}) ']']);
+    else
+        for jj=1:length(param.interval_construct{ii})
+        if jj==1
+            param.interval_detail_str = strcat(param.interval_detail_str,['[' num2str(param.interval_construct{ii}(jj))]);
+        elseif jj==length(param.interval_construct{ii})
+            param.interval_detail_str = strcat(param.interval_detail_str,num2str(param.interval_construct{ii}(jj)));
+            param.interval_detail_str = strcat(param.interval_detail_str,']');
+            break;
+        else
+            param.interval_detail_str = strcat(param.interval_detail_str,num2str(param.interval_construct{ii}(jj)));
+        end
+        param.interval_detail_str = strcat(param.interval_detail_str,'_');
+        end
+    end
 end
+
+
+end
+
+
+

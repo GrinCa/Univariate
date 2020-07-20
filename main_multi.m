@@ -4,7 +4,6 @@
 %                             March 2020                                  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %--------------------------------------------------------------------------
 % Init main program
 %--------------------------------------------------------------------------
@@ -37,7 +36,7 @@ addpath(genpath(strcat(pwd,'/',Derivatives)));
 
 % Input parameters for Matlab calculation
 flag.rerun = 0; % to recalculate FreeFem++ matrices
-flag.recalculated = 0; % allow WCAWE and/or FE recalculation
+flag.recalculated = 1; % allow WCAWE and/or FE recalculation
 flag.calculateFE = 1;  % calculate FE solution
 flag.calculateWCAWE = 1; % calculate WCAWE solution
 flag.cat_basis = 0; % concatenate the sub basis from WCAWE to form one by SVD
@@ -50,8 +49,8 @@ flag.plotcomparison = 0; % plot comparison between FE and WCAWE
 flag.comparisonMULTI = 0;
 
 flag.convert2VTK = 0; % convert Pout.mat into a .vtk file
-flag.converge_sizemesh = 1;
-flag.compare_FE_WCAWE = 0;
+flag.converge_sizemesh = 0;
+flag.compare_FE_WCAWE = 1;
 
 flag.get_matrices = 1;
 if flag.convert2VTK || flag.converge_sizemesh || flag.compare_FE_WCAWE
@@ -87,14 +86,15 @@ param.freq = param.fmin:param.freqincr:param.fmax; % frequency range
 param.nfreq = length(param.freq);
 
 % those frequencies are the frequencies point for Padé expension
-param.freqref = [120];    
+param.freqref = [110 130 150 170 190];    
 param.nfreqref = length(param.freqref); 
 
 % interval_construct enables us to build sub basis for WCAWE by
 % by using the ref frequencies as we want. We can choose which ref freq to
 % add for each sub basis. The number of sub basis for WCAWE before SVD is
 % equal to length(interval_construct)
-param.interval_construct = {[1]};
+param.interval_construct = {[1],[2],[3],[4],[5]};
+
 
 % Input data for the loop over expansion orders. Note that for each
 % frequency sweep the number of vectors from the WCAWE basis will depend on
@@ -103,7 +103,7 @@ param.interval_construct = {[1]};
 % vectors in the basis, 5 by intervals.
 param.nvecfreqmin = 20;
 param.nvecfreqmax = 20;
-param.incrvec = 5;
+param.incrvec = 10;
 param.vecfreqrange = param.nvecfreqmin:param.incrvec:param.nvecfreqmax;
 
 % path to store data
@@ -115,7 +115,7 @@ path1 = ['[' num2str(param.f_range(1)) '_' num2str(param.f_range(2)) ']'];
 param = build_interval(param);
 
 % generate folders needed for computation
-genfolders(mesh,param)
+param = genfolders(mesh,param);
 
 %--------------------------------------------------------------------------
 % Matrices calculated with Freefem++
@@ -274,8 +274,8 @@ if flag.recalculated
         end
         if flag.calculateWCAWE
             path2 = ['[' num2str(param.f_range(1)) '_' num2str(param.f_range(2)) ']',...
-                    '/[' num2str(nvecfreq) '][',replace(num2str(param.freqref),' ','_') ']'];
-            save(['Matrices/',mesh.file,'/',path2,'/SOLWCAWE','_sizemesh_',num2str(sizemesh),'.mat'],'SOLWCAWE');
+                     '/[' num2str(nvecfreq) '][',replace(num2str(param.freqref),' ','_') ']'];
+            save(['Matrices/',mesh.file,'/',path2,'/SOLWCAWE','_sizemesh_',num2str(sizemesh),'_',param.interval_detail_str,'.mat'],'SOLWCAWE');
         end
         % Save data only for FE solution
         save(['Matrices/',mesh.file,'/',path1,'/','DATA_sizemesh_',num2str(sizemesh),'.mat'],'FEmatrices','param','timing');
@@ -323,7 +323,8 @@ if flag.converge_sizemesh
     arg.ylabel = 'mean pressure (Pa)';
     arg.title = '';
     arg.save_name = ['Convergence FE ' replace(num2str(sizemesh_file'),' ','_')];
-    arg.save_path = path1;
+    arg.save_path = ['Matrices/' mesh.file '/' path1];
+    arg.log = 0;
     show_graph(arg,meanFE,title_VALUES_1,param);
 end
 
@@ -343,33 +344,37 @@ if flag.compare_FE_WCAWE
     SOLFE = SOLFE{1};
     VALUES_1{1} = mean(real(SOLFE(FEmatrices.surf_nodes,:)),1);
     title_VALUES_1{1} = 'FE';
+    
+    SOLWCAWE_list = cell(1,length(param.vecfreqrange));
 
     %read WCAWE solution
     for ii=1:length(param.vecfreqrange)
         path2 = ['[' num2str(param.f_range(1)) '_' num2str(param.f_range(2)) ']',...
-                '/[' num2str(param.vecfreqrange(ii)) '][',replace(num2str(param.freqref),' ','_') ']'];
-        SOLWCAWE = struct2cell(load(['Matrices/',mesh.file,'/',path2,'/SOLWCAWE','_sizemesh_',num2str(sizemesh),'.mat']));
-        SOLWCAWE = SOLWCAWE{1};
-        VALUES_1{ii+1} = mean(real(SOLWCAWE(FEmatrices.surf_nodes,:)),1);
+                 '/[' num2str(param.vecfreqrange(ii)) '][',replace(num2str(param.freqref),' ','_') ']'];
+        SOLWCAWE = struct2cell(load(['Matrices/',mesh.file,'/',path2,'/SOLWCAWE','_sizemesh_',num2str(sizemesh),'_',param.interval_detail_str,'.mat']));
+        SOLWCAWE_list{ii} = SOLWCAWE{1};
+        VALUES_1{ii+1} = mean(real(SOLWCAWE_list{ii}(FEmatrices.surf_nodes,:)),1);
         title_VALUES_1{ii+1} = ['WCAWE [' num2str(param.vecfreqrange(ii)) ' vec]'];
     end
     % calculate relative error
     for ii=1:length(param.vecfreqrange)
-        VALUES_2{ii} = abs((mean(real(SOLWCAWE(FEmatrices.surf_nodes,:)),1) - mean(real(SOLFE(FEmatrices.surf_nodes,:)),1))./mean(1+real(SOLFE(FEmatrices.surf_nodes,:)),1));
+        VALUES_2{ii} = abs((mean(real(SOLWCAWE_list{ii}(FEmatrices.surf_nodes,:)),1) - mean(real(SOLFE(FEmatrices.surf_nodes,:)),1))./mean(1+real(SOLFE(FEmatrices.surf_nodes,:)),1));
         title_VALUES_2{ii} = ['WCAWE [' num2str(param.vecfreqrange(ii)) ' vec]'];
     end
     arg1.config = 'converge';
     arg1.xlabel = 'freq';
     arg1.ylabel = 'mean pressure (Pa)';
     arg1.title =  '';
-    arg1.save_name = ['Comparison FE WCAWE ' replace(num2str(param.vecfreqrange),' ','_')];
-    arg1.save_path = ['/Matrices/' mesh.file '/' path1];
+    arg1.save_name = ['Comparison_FE_WCAWE ' replace(num2str(param.vecfreqrange),' ','_') '_' param.interval_detail_str];
+    arg1.save_path = ['Matrices/' mesh.file '/' path1];
+    arg1.log = 0;
     arg2.config = 'converge';
     arg2.xlabel = 'freq';
     arg2.ylabel = 'relative error';
     arg2.title =  '';
-    arg2.save_name = ['Relative error comparison' replace(num2str(param.vecfreqrange),' ','_')];
-    arg2.save_path = ['/Matrices/' mesh.file '/' path1];
+    arg2.save_name = ['Relative_error_comparison' replace(num2str(param.vecfreqrange),' ','_') '_' param.interval_detail_str];
+    arg2.save_path = ['Matrices/' mesh.file '/' path1];
+    arg2.log = 1;
     show_graph(arg1,VALUES_1,title_VALUES_1,param);
     show_graph(arg2,VALUES_2,title_VALUES_2,param);
 end
@@ -400,7 +405,7 @@ if flag.convert2VTK
         convertGEO2VTK(FEmatrices,mesh,sizemesh,SOLFE,PARTITION,param,range);
     end
     if flag.calculateWCAWE
-        SOLWCAWE = struct2cell(load(['Matrices/',mesh.file,'/',path2,'/SOLWCAWE','_sizemesh_',num2str(sizemesh),'.mat']));
+        SOLWCAWE = struct2cell(load(['Matrices/',mesh.file,'/',path2,'/SOLWCAWE','_sizemesh_',num2str(sizemesh),'_',param.interval_detail_str,'.mat']));
         SOLWCAWE = SOLWCAWE{1};
         convertGEO2VTK(FEmatrices,mesh,sizemesh,SOLWCAWE,PARTITION,param,range);
     end
