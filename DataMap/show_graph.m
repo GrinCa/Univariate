@@ -1,24 +1,30 @@
-function show_graph(arg,VALUES,title_VALUES,param)
+function show_graph(arg,param)
 
 
 if strcat(arg.config,'comparison')
-    show2d(VALUES,title_VALUES,param,arg)
+    show2d(arg,param)
 end
     
 end
 
 
-function show2d(VALUES,title_VALUES,param,arg)
+function show2d(arg,param)
     figure
     if arg.log
-        for ii=1:length(VALUES)
-            plot(param.freq,log10(VALUES{ii}),'DisplayName',title_VALUES{ii});
+        for ii=1:length(arg.VALUES)
+            plot(param.freq,log10(arg.VALUES{ii}),'DisplayName',arg.label{ii});
             hold on
         end
     else
-        for ii=1:length(VALUES)
-            plot(param.freq,VALUES{ii},'DisplayName',title_VALUES{ii});
+        for ii=1:length(arg.VALUES)
+            plot(param.freq,arg.VALUES{ii},'DisplayName',arg.label{ii});
             hold on
+        end
+        if arg.external_plot.is_needed
+            for ii=1:length(arg.external_plot.VALUES)
+                plot(param.freq,arg.external_plot.VALUES{ii},'DisplayName',arg.external_plot.label{ii});
+                hold on
+            end
         end
     end
     
