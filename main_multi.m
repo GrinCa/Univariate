@@ -35,10 +35,10 @@ addpath(genpath(strcat(pwd,'/',Derivatives)));
 %--------------------------------------------------------------------------
 
 % Input parameters for Matlab calculation
-flag.rerun = 0; % to recalculate FreeFem++ matrices
+flag.rerun = 1; % to recalculate FreeFem++ matrices
 flag.recalculated = 1; % allow WCAWE and/or FE recalculation
 flag.calculateFE = 1;  % calculate FE solution
-flag.calculateWCAWE = 1; % calculate WCAWE solution
+flag.calculateWCAWE = 0; % calculate WCAWE solution
 flag.cat_basis = 0; % concatenate the sub basis from WCAWE to form one by SVD
 
 
@@ -49,7 +49,7 @@ flag.plotcomparison = 0; % plot comparison between FE and WCAWE
 flag.comparisonMULTI = 0;
 
 flag.convert2VTK = 0; % convert Pout.mat into a .vtk file
-flag.converge_sizemesh = 1;
+flag.converge_sizemesh = 0;
 flag.compare_FE_WCAWE = 0;
 
 flag.get_matrices = 1;
@@ -79,21 +79,21 @@ P0 = 2e-5;
 
 % Frequency range
 param.fmin = 100;
-param.fmax = 200;
+param.fmax = 100;
 param.f_range = [param.fmin param.fmax];
-param.freqincr = 0.5; % 20
+param.freqincr = 1; % 20
 param.freq = param.fmin:param.freqincr:param.fmax; % frequency range
 param.nfreq = length(param.freq);
 
 % those frequencies are the frequencies point for Padé expension
-param.freqref = [110 130 150 170 190];    
+param.freqref = [100];    
 param.nfreqref = length(param.freqref); 
 
 % interval_construct enables us to build sub basis for WCAWE by
 % by using the ref frequencies as we want. We can choose which ref freq to
 % add for each sub basis. The number of sub basis for WCAWE before SVD is
 % equal to length(interval_construct)
-param.interval_construct = {[1 2],[3],[3 4 5],[4],[5]};
+param.interval_construct = {[1]};
 
 
 % Input data for the loop over expansion orders. Note that for each
@@ -270,15 +270,15 @@ if flag.recalculated
         % Saves
         %--------------------------------------------------------------------------
         if flag.calculateFE
-            save(['Matrices/',mesh.file,'/',path1,'/SOLFE','_sizemesh_',num2str(sizemesh),'.mat'],'SOLFE');
+            save(['Matrices/',mesh.file,'/',path1,'/SOLFE','_sizemesh_',num2str(sizemesh),'.mat'],'SOLFE','-v7.3');
         end
         if flag.calculateWCAWE
             path2 = ['[' num2str(param.f_range(1)) '_' num2str(param.f_range(2)) ']',...
                      '/[' num2str(nvecfreq) '][',replace(num2str(param.freqref),' ','_') ']'];
-            save(['Matrices/',mesh.file,'/',path2,'/SOLWCAWE','_sizemesh_',num2str(sizemesh),'_',param.interval_detail_str,'.mat'],'SOLWCAWE');
+            save(['Matrices/',mesh.file,'/',path2,'/SOLWCAWE','_sizemesh_',num2str(sizemesh),'_',param.interval_detail_str,'.mat'],'SOLWCAWE','-v7.3');
         end
         % Save data only for FE solution
-        save(['Matrices/',mesh.file,'/',path1,'/','DATA_sizemesh_',num2str(sizemesh),'.mat'],'FEmatrices','param','timing');
+        save(['Matrices/',mesh.file,'/',path1,'/','DATA_sizemesh_',num2str(sizemesh),'.mat'],'FEmatrices','param','timing','-v7.3');
 
     end
 
