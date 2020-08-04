@@ -73,7 +73,7 @@ function FEmatrices = build_global(FEmatrices,listLHS,param,FILENAME)
 % if Problem1 is one problem to study, then create Problem1_pattern. Then
 % you need to compute it.
 
-FEmatrices = Truck_pattern(FEmatrices,listLHS,param,FILENAME);
+FEmatrices = Trucktmp_pattern(FEmatrices,listLHS,param,FILENAME);
 
 end
 

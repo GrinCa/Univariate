@@ -15,6 +15,11 @@ function show2d(arg,param)
             plot(param.freq,log10(arg.VALUES{ii}),'DisplayName',arg.label{ii});
             hold on
         end
+    elseif arg.log_ref
+        for ii=1:length(arg.VALUES)
+            plot(param.freq,log10(arg.VALUES{ii}.^2/(20e-6)^2),'DisplayName',arg.label{ii});
+            hold on
+        end    
     else
         for ii=1:length(arg.VALUES)
             plot(param.freq,arg.VALUES{ii},'DisplayName',arg.label{ii});
@@ -22,11 +27,13 @@ function show2d(arg,param)
         end
         if arg.external_plot.is_needed
             for ii=1:length(arg.external_plot.VALUES)
-                plot(param.freq,arg.external_plot.VALUES{ii},'DisplayName',arg.external_plot.label{ii});
+                plot(param.freq,log10(arg.external_plot.VALUES{ii}),'DisplayName',arg.external_plot.label{ii});
                 hold on
             end
         end
     end
+    
+    
     
     xlabel(arg.xlabel);
     ylabel(arg.ylabel);

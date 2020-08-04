@@ -4,11 +4,17 @@
 SetFactory("OpenCASCADE");
 
 
+
+
+
+
+
+
 L=1;
 Lpml = 1.5;
 coeff_reduction = 3;
 
-sizemesh = 1.5;
+sizemesh = 0.2;
 
 
 Box(1) = {0, 0, 0.5, 1.6, 2.3, 2.5};
@@ -39,7 +45,6 @@ Surface Loop(15) = {1, 3, 5, 4, 2, 6};
 Surface Loop(16) = {6, 1, 3, 5, 4, 2};
 //+
 Surface Loop(17) = {21, 23, 19, 24, 22, 20};
-
 
 
 
@@ -224,8 +229,8 @@ Line(243) = {128, 124};
 Line(244) = {130, 128};
 //+
 Line(245) = {129, 128};
-
-
+//+
+Line(173) = {102, 109};
 //+
 Line Loop(49) = {219, 216, 217, 218};
 //+
@@ -240,7 +245,8 @@ Plane Surface(50) = {50, 51};
 Line Loop(52) = {222, 240, -225, 239};
 //+
 Plane Surface(51) = {52};
-
+//+
+Plane Surface(52) = {53};
 //+
 Line Loop(53) = {238, -239, 244, -245};
 //+

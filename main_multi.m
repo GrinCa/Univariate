@@ -35,9 +35,9 @@ addpath(genpath(strcat(pwd,'/',Derivatives)));
 %--------------------------------------------------------------------------
 
 % Input parameters for Matlab calculation
-flag.rerun = 1; % to recalculate FreeFem++ matrices
+flag.rerun = 0; % to recalculate FreeFem++ matrices
 flag.recalculated = 1; % allow WCAWE and/or FE recalculation
-flag.calculateFE = 1;  % calculate FE solution
+flag.calculateFE = 0;  % calculate FE solution
 flag.calculateWCAWE = 0; % calculate WCAWE solution
 flag.cat_basis = 0; % concatenate the sub basis from WCAWE to form one by SVD
 
@@ -64,7 +64,7 @@ timing.freefem = 0;
 timing.WCAWE = 0;
 timing.FE = 0;
 
-mesh.file = 'Truck';
+mesh.file = 'Trucktmp';
 sizemesh_file = load('sizemesh.txt');
 sizemesh = sizemesh_file(end);
 
@@ -79,9 +79,9 @@ P0 = 2e-5;
 
 % Frequency range
 param.fmin = 100;
-param.fmax = 100;
+param.fmax = 400;
 param.f_range = [param.fmin param.fmax];
-param.freqincr = 1; % 20
+param.freqincr = 0.75; % 20
 param.freq = param.fmin:param.freqincr:param.fmax; % frequency range
 param.nfreq = length(param.freq);
 
@@ -122,7 +122,8 @@ param = genfolders(mesh,param);
 %--------------------------------------------------------------------------
 if flag.get_matrices
     matrix_names = ["Hr.txt","Hi.txt",...
-                    "Qr.txt","Qi.txt"];
+                    "Qr.txt","Qi.txt",...
+                    "SURFINT.txt"];
                 
     [FEmatrices,ndof,timing,flag] = get_matrices(timing,flag,mesh,matrix_names,param);
     Nodes = FEmatrices.Nodes;
@@ -263,7 +264,6 @@ if flag.recalculated
                 end
                 SOLWCAWE = [SOLWCAWE{:}];
             end
-            
         end
 
         %--------------------------------------------------------------------------
@@ -304,32 +304,35 @@ end
 
 
 if flag.converge_sizemesh
-    clear FEmatrices param SOLFE;
+    clear FEmatrices SOLFE;
     
-    arg.VALUES = cell(length(sizemesh_file),1);
-    arg.label = cell(length(sizemesh_file),1);
-    for ii=1:length(sizemesh_file)
-        DATA = struct2cell(load(['Matrices/',mesh.file,'/',path1,'/','DATA_sizemesh_',num2str(sizemesh_file(ii)),'.mat']));
-        FEmatrices = DATA{1};
-        param = DATA{2};
-        arg.label{ii} = [num2str(size(FEmatrices.Nodes,1)) ' ndofs'];
-        SOLFE = struct2cell(load(['Matrices/',mesh.file,'/',path1,'/SOLFE','_sizemesh_',num2str(sizemesh_file(ii)),'.mat']));
-        SOLFE = SOLFE{1};
-        arg.VALUES{ii} = mean(real(SOLFE(FEmatrices.surf_nodes,:)),1);
-    end
-    
+%     arg.VALUES = cell(length(sizemesh_file),1);
+%     arg.label = cell(length(sizemesh_file),1);
+%     for ii=1:length(sizemesh_file)
+%         DATA = struct2cell(load(['Matrices/',mesh.file,'/',path1,'/','DATA_sizemesh_',num2str(sizemesh_file(ii)),'.mat']));
+%         FEmatrices = DATA{1};
+%         param = DATA{2};
+%         arg.label{ii} = [num2str(size(FEmatrices.Nodes,1)) ' ndofs'];
+%         SOLFE = struct2cell(load(['Matrices/',mesh.file,'/',path1,'/SOLFE','_sizemesh_',num2str(sizemesh_file(ii)),'.mat']));
+%         SOLFE = SOLFE{1};
+%         arg.VALUES{ii} = mean(real(SOLFE(FEmatrices.surf_nodes,:)),1);
+%     end
+%     
+
     arg.config = 'converge';
     arg.xlabel = 'freq';
     arg.ylabel = 'mean pressure (Pa)';
     arg.title = '';
-    arg.save_name = ['Convergence FE ' replace(num2str(sizemesh_file'),' ','_')];
+    arg.save_name = ['Convergence FE (log) ' replace(num2str(sizemesh_file'),' ','_')];
     arg.save_path = ['Matrices/' mesh.file '/' path1];
-    arg.log = false;
+    arg.log = true;
+    arg.log_ref = false;
     
     arg.external_plot.is_needed = true;
-    comsol_results = load('comsol_results_truck.txt');
-    arg.external_plot.VALUES = {-comsol_results(:,2)};
-    arg.external_plot.label = {'FE Comsol'};
+    comsol_results = load('valuesComsol.txt');
+    ff_results = load('valuesFF.txt');
+    arg.external_plot.VALUES = {-comsol_results(:,2),ff_results};
+    arg.external_plot.label = {'FE Comsol','1383409 ndof'};
     
     show_graph(arg,param);
 end
@@ -418,6 +421,7 @@ if flag.convert2VTK
         convertGEO2VTK(FEmatrices,mesh,sizemesh,SOLWCAWE,PARTITION,param,range);
     end
 end
+
 
 
 
