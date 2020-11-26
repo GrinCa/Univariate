@@ -317,7 +317,6 @@ if flag.converge_sizemesh
 %         SOLFE = SOLFE{1};
 %         arg.VALUES{ii} = mean(real(SOLFE(FEmatrices.surf_nodes,:)),1);
 %     end
-%     
 
     arg.config = 'converge';
     arg.xlabel = 'freq';
